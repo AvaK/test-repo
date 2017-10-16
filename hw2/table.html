@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="style.css">
+</head>
+  <body>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script>
+    	function change_format(type,text)
+    	{
+    		
+			if (type == 1)
+			   {
+					var format = d3.format(".2s")(text);
+					return format;
+				}
+			if (type == 2)
+				{
+					var format = d3.format(".3r")(text);
+					return format;
+				}
+			if (type == 4)
+				{
+					var format = d3.format(",.2r")(text);
+					return format;
+				}	
+				return text;
+				
+				
+    	};
+    	
+
+        d3.json("https://raw.githubusercontent.com/AvaK/test-repo/master/hw2/countries_2012.json", function(error, data){
+        var order = [false,false,false,false,false,false]
+        var columns = Object.keys(data[0]);
+        var to_show = ["name","continent", "gdp", "life_expectancy", "population", "year"]
+        var keys_to_delete =  columns.filter(item => to_show.indexOf(item) == -1) 
+        columns = columns.filter(item => to_show.indexOf(item) != -1) 
+        var table = d3.select("body").append("table"),
+          thead = table.append("thead")
+                       .attr("class", "thead");
+          tbody = table.append("tbody");
+
+        table.append("caption")
+          .html("World Countries Ranking");
+
+        thead.append("tr").selectAll("th")
+          .data(columns)
+        .enter()
+          .append("th")
+          .text(function(d) { return d; })
+          .on("click", function(header, i) {
+           order[i] = !order[i]
+            tbody.selectAll("tr").sort(function(a, b) {
+              if (order[i] == true) {
+                  
+              		return d3.descending(a[header], b[header]);
+              }
+              else
+              {
+              		return d3.ascending(a[header], b[header]);
+              }
+                
+            });
+          });
+          
+        data.forEach(function(item, i, data)
+        {
+        	keys_to_delete.forEach(function(key,j,keys_to_delete)
+        	{
+        		delete item[key]
+        	});
+        });
+       
+        var rows = tbody.selectAll("tr.row")
+          .data(data)
+          .enter()
+          .append("tr").attr("class", "row");
+		
+
+        var cells = rows.selectAll("td")
+          .data(function(row) {
+              return d3.range(Object.keys(row).length).map(function(column, i) {
+                  return row[Object.keys(row)[i]];
+              });
+          })
+          .enter()
+          .append("td")
+          .text(function(d, i) {  return change_format(i,d);   })
+          .on("mouseover", function(d, i) {
+
+            d3.select(this.parentNode)
+              .style("background-color", "#F3ED86");
+        
+          }).on("mouseout", function() {
+
+            tbody.selectAll("tr")
+              .style("background-color", null)
+              .selectAll("td")
+              .style("background-color", null);
+
+          });
+
+      });
+    </script> 
+  </body>
+</html>
